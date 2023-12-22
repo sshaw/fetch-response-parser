@@ -15,12 +15,32 @@ And most code doesn't even do it!
 
 Instead of writing (or not writing) this boilerplate over and over you can  use the `fetch` Response Parser.
 
+## Installation
+
+```
+npm install fetch-response-parser
+```
+
+Or
+
+```
+yarn install fetch-response-parser
+```
+
+If you want to load from a `script` tag:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/fetch-response-parser@VERSION/dist/fetch-response-parser.min.js"></script>
+```
+
+Where `VERSION` is the version number you want to use.
+
 ## Usage
 
 ```js
 const parser = require('fetch-response-parser');
 
-fetch('https://httpbin.org/json).
+fetch('https://httpbin.org/json').
   then(parser.json()).
   then(json => console.log(slideshow.author)).
   catch(error => console.error(error)); // error is an instance of Error
