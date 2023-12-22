@@ -10,7 +10,7 @@
         "dev:build:cjs": "npx webpack --mode production",
         "dev:build": "run-s dev:build:*",
         "test": "jest",
-        "clear": "rimraf dist"
+        "clean": "rimraf dist fetch-response-parser-*.tgz"
     },
     "keywords": [
         "fetch",

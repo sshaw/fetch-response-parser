@@ -1,0 +1,6 @@
+*.tgz
+*~
+.github
+*.config.js
+index.test.js
+.tool-versions
