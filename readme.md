@@ -1,10 +1,12 @@
-# `fetch` Response Parser
+# Fetch Response Parser
+
+![Fetch Response Parser CI Status](https://github.com/sshaw/fetch-response-parser/workflows/CI/badge.svg "Fetch Response Parser CI Status")
 
 Properly handle (JSON) responses from [the Fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API).
 
 ## Overview
 
-Handle Fetch API responses can be tedious. To get it right one must:
+Handling Fetch API responses can be tedious. To get it right one must:
 
 - Check the response's status
 - Check the response's content-type
@@ -13,7 +15,7 @@ Handle Fetch API responses can be tedious. To get it right one must:
 
 And most code doesn't even do it!
 
-Instead of writing (or not writing) this boilerplate over and over you can  use the `fetch` Response Parser.
+Instead of writing (or not writing) this boilerplate over and over you can  use the Fetch Response Parser.
 
 ## Installation
 
