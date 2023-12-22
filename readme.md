@@ -50,6 +50,8 @@ fetch('https://httpbin.org/json').
 
 Currently only the `json` function is supported.
 
+If you're loading via the `script` tag instead of `parser` you'd use `FetchResponseParser`.
+
 ### Options
 
 The `json` function accepts the following options:
