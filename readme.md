@@ -26,7 +26,7 @@ npm install fetch-response-parser
 Or
 
 ```
-yarn install fetch-response-parser
+yarn add fetch-response-parser
 ```
 
 If you want to load from a `script` tag:
@@ -44,7 +44,7 @@ const parser = require('fetch-response-parser');
 
 fetch('https://httpbin.org/json').
   then(parser.json()).
-  then(json => console.log(slideshow.author)).
+  then(json => console.log(json.slideshow.author)).
   catch(error => console.error(error)); // error is an instance of Error
 ```
 
@@ -76,11 +76,13 @@ const parser = require('fetch-response-parser');
 
 function handleErorr(error) {
   if(error.json)
-    console.error(error.body.some.property);
+    console.error(error.responseBody.some.property);
   else if(error.redirected)
-    console.error(`Redirected to: ${error.redirectedTo}`)
+    console.error(`Redirected to: ${error.redirectedTo}`);
+  else if(error.responseBody)
+    console.error(error.responseBody);
   else
-    console.error(error.body)
+    console.error(error.message);
 }
 
 fetch('https://httpbin.org/html').
