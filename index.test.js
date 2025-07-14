@@ -230,17 +230,27 @@ describe(`given a 302 response`, () => {
 });
 
 describe('strict option', () => {
-    beforeEach(
-        () => fetch.mockResponse('<h1>Server Error</h1>', {headers: {'Content-Type': 'text/html'}})
-    )
+   const htmlResponse = () => fetch.mockResponse('<h1>Server Error</h1>', {headers: {'Content-Type': 'text/html'}})
 
     test('when true raises an error when the content type is not json', () => {
+        htmlResponse();
+
         expect(
             () => fetch('https://example.com').then(parser.json({strict: true}))
         ).rejects.toThrow('Expected JSON response but was text/html');
     });
 
+    test('when true does not raise an error when the status code is 204 (no content)', () => {
+        fetch.mockResponse('', {status: 204, statusText: 'No Content'});
+
+        expect(
+            () => fetch('https://example.com').then(parser.json({strict: true}))
+        ).resolves.toBeDefined()
+    });
+
     test('when false returns the response', () => {
+        htmlResponse();
+
         return fetch('https://example.com').
             then(parser.json({strict: false})).
             then(html => {
@@ -249,6 +259,8 @@ describe('strict option', () => {
     });
 
     test('defaults to true', () => {
+        htmlResponse();
+
         expect(
             () => fetch('https://example.com').then(parser.json())
         ).rejects.toThrow('Expected JSON response but was text/html');

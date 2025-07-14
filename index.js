@@ -49,7 +49,8 @@ function parseJSON(options) {
         if(isJSON(response.headers))
             return response.json();
 
-        if(strict) {
+        // If it's a 204 (no content) then it's okay that it's not JSON
+        if(strict && response.status !== 204) {
             const message = `Expected JSON response but was ${contentType(response.headers)}`;
             return response.text().then(body => { throw exception(message, response, { body }); });
         }
