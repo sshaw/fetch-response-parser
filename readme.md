@@ -37,6 +37,8 @@ If you want to load from a `script` tag:
 
 Where `VERSION` is the version number you want to use.
 
+The package contains a minified, moduleless, JavaScript version at `fetch-response-parser/dist/fetch-response-parser.min.js`
+
 ## Usage
 
 ```js
