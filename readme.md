@@ -2,7 +2,7 @@
 
 ![Fetch Response Parser CI Status](https://github.com/sshaw/fetch-response-parser/workflows/CI/badge.svg "Fetch Response Parser CI Status")
 
-Properly handle (JSON) responses from [the Fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API).
+Lightweight library to properly handle (JSON) responses from [the Fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API).
 
 ## Overview
 

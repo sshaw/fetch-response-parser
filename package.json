@@ -1,7 +1,7 @@
 {
     "name": "fetch-response-parser",
-    "version": "0.0.2",
-    "description": "Properly handle (JSON) responses from the Fetch API",
+    "version": "0.0.3",
+    "description": "Lightweight library to properly handle (JSON) responses from the Fetch API",
     "scripts": {
         "build:web": "cross-env TARGET=web npx webpack --mode production",
         "build:cjs": "npx webpack --mode production",
