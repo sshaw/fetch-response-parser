@@ -38,7 +38,7 @@ function errorMessage(response) {
 }
 
 function bodyError(response) {
-    return response.text().then(body => { console.log('======= ', body); throw exception(errorMessage(response), response, {body: body}); });
+    return response.text().then(body => { throw exception(errorMessage(response), response, {body: body}); });
 }
 
 
