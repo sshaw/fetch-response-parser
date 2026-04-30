@@ -2,7 +2,7 @@
 
 ![Fetch Response Parser CI Status](https://github.com/sshaw/fetch-response-parser/workflows/CI/badge.svg "Fetch Response Parser CI Status")
 
-Lightweight library to properly handle (JSON) responses from [the Fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API).
+Lightweight library to properly handle JSON and other responses from [the Fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API).
 
 ## Overview
 
@@ -41,6 +41,8 @@ The package contains a minified, moduleless, JavaScript version at `fetch-respon
 
 ## Usage
 
+Handling a JSON response:
+
 ```js
 const parser = require('fetch-response-parser');
 
@@ -50,9 +52,16 @@ fetch('https://httpbin.org/json').
   catch(error => console.error(error)); // error is an instance of Error
 ```
 
-Currently only the `json` function is supported.
-
 If you're using the module-less version you'd use `window.FetchResponseParser` instead of `parser`.
+
+Handling a text response, i.e., returning it as a string:
+
+```js
+fetch('https://httpbin.org/html').
+  then(parser.text()).
+  then(text => console.log(text)).
+  catch(error => console.error(error)); // error is an instance of Error
+```
 
 ### Options
 

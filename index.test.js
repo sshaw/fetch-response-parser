@@ -5,41 +5,229 @@ const parser = require('./dist/fetch-response-parser.js');
 
 beforeEach(() => fetch.resetMocks());
 
-[
-    'application/json',
-    'application/json charset=utf-8',
-    'APPLICATION/JSON',
-    'text/json',
-    'text/json charset=utf-8',
-    'TEXT/JSON'
-].forEach(header => {
-    // raise an erorr but should set JSON response
-    test(`parses a response with a ${header} content type`, () => {
-        fetch.mockResponse(JSON.stringify({foo: 123}), {headers: {'Content-Type': header}});
-
-        return fetch('https://example.com').
-            then(parser.json()).
-            then(data => {
-                expect(data.foo).toBe(123);
-            });
-    });
-});
-
 // Just a few are fine
-[
+const nonSuccesStatus = [
     [404, 'Not Found'],
     [500, 'Internal Server Error'],
     [502, 'Bad Gateway'],
-].forEach(([status, message]) => {
-    describe(`given a JSON response with HTTP ${status} status`, () => {
+];
+
+describe('text()', () => {
+    test(`returns the response body as a string`, () => {
+        fetch.mockResponse('Foo hoo!', {headers: {'Content-Type': 'text/plain'}});
+
+        return fetch('https://example.com').
+            then(parser.text()).
+            then(text => {
+                expect(text).toBe('Foo hoo!');
+            });
+    });
+
+    nonSuccesStatus.forEach(([status, message]) => {
+        describe(`given an HTML response with HTTP ${status} status`, () => {
+            beforeEach(() => {
+                fetch.mockResponse(
+                    '<p>Foo!</p>',
+                    {
+                        status: status,
+                        headers: {'Content-Type':'text/html' }
+                    }
+                );
+            });
+
+            test('raises an exception describing the response', () => {
+                expect.assertions(1)
+
+                return fetch('https://example.com').then(parser.text()).
+                    catch(e => {
+                        expect(e.message).toMatch(`Request failed with HTTP status ${status} ${message}`);
+                    });
+            });
+
+            test('sets the parsed response body to Error.responseBody', () => {
+                expect.assertions(1)
+
+                return fetch('https://example.com').then(parser.text()).
+                    catch(e => {
+                        expect(e.responseBody).toEqual('<p>Foo!</p>');
+                    });
+            });
+
+            test('sets Error.json to false', () => {
+                expect.assertions(1);
+
+                return fetch('https://example.com').then(parser.text()).
+                    catch(e => {
+                        expect(e.json).toBe(false);
+                    });
+            });
+        });
+    });
+});
+
+describe('json()', () => {
+    [
+        'application/json',
+        'application/json charset=utf-8',
+        'APPLICATION/JSON',
+        'text/json',
+        'text/json charset=utf-8',
+        'TEXT/JSON'
+    ].forEach(header => {
+        // raise an erorr but should set JSON response
+        test(`parses a response with a ${header} content type`, () => {
+            fetch.mockResponse(JSON.stringify({foo: 123}), {headers: {'Content-Type': header}});
+
+            return fetch('https://example.com').
+                then(parser.json()).
+                then(data => {
+                    expect(data.foo).toBe(123);
+                });
+        });
+    });
+
+    nonSuccesStatus.forEach(([status, message]) => {
+        describe(`given a JSON response with HTTP ${status} status`, () => {
+            beforeEach(() => {
+                fetch.mockResponse(
+                    JSON.stringify({foo: 123}),
+                    {
+                        status: status,
+                        headers: {'Content-Type':'application/json' }
+                    }
+                );
+            });
+
+            test('raises an exception describing the response', () => {
+                expect.assertions(1)
+
+                return fetch('https://example.com').then(parser.json()).
+                    catch(e => {
+                        expect(e.message).toMatch(`Request failed with HTTP status ${status} ${message}`);
+                    });
+            });
+
+            test('sets the parsed response body to Error.responseBody', () => {
+                expect.assertions(1)
+
+                return fetch('https://example.com').then(parser.json()).
+                    catch(e => {
+                        expect(e.responseBody).toEqual({foo: 123});
+                    });
+            });
+
+            test('sets the response to Error.response', () => {
+                expect.assertions(1);
+
+                return fetch('https://example.com').then(parser.json()).
+                    catch(e => {
+                        expect(e.response).toBeInstanceOf(Response);
+                    });
+            });
+
+            test('sets Error.json to true', () => {
+                expect.assertions(1)
+
+                return fetch('https://example.com').then(parser.json()).
+                    catch(e => {
+                        expect(e.json).toBe(true);
+                    });
+            });
+
+            test('sets Error.redirected to false', () => {
+                expect.assertions(1)
+
+                return fetch('https://example.com').then(parser.json()).
+                    catch(e => {
+                        expect(e.redirected).toBe(false);
+                    });
+            });
+
+            test('sets Error.redirectedTo to null', () => {
+                expect.assertions(1)
+
+                return fetch('https://example.com').then(parser.json()).
+                    catch(e => {
+                        expect(e.redirectedTo).toBeNull();
+                    });
+            });
+        });
+
+        describe(`given an HTML response with HTTP ${status} status`, () => {
+            beforeEach(() => {
+                fetch.mockResponse(
+                    '<h1>Server Error</h1>',
+                    {
+                        status: status,
+                        headers: {'Content-Type':'text/html' }
+                    }
+                );
+            });
+
+            test('raises an exception describing the response', () => {
+                expect.assertions(1);
+
+                return fetch('https://example.com').then(parser.json()).
+                    catch(e => {
+                        expect(e.message).toMatch(`Request failed with HTTP status ${status} ${message}`);
+                    });
+            });
+
+            test('sets the response body to Error.responseBody', () => {
+                expect.assertions(1);
+
+                return fetch('https://example.com').then(parser.json()).
+                    catch(e => {
+                        expect(e.responseBody).toBe('<h1>Server Error</h1>');
+                    });
+            });
+
+            test('sets the response to Error.response', () => {
+                expect.assertions(1);
+
+                return fetch('https://example.com').then(parser.json()).
+                    catch(e => {
+                        expect(e.response).toBeInstanceOf(Response);
+                    });
+            });
+
+            test('sets Error.json to false', () => {
+                expect.assertions(1);
+
+                return fetch('https://example.com').then(parser.json()).
+                    catch(e => {
+                        expect(e.json).toBe(false);
+                    });
+            });
+
+
+            test('sets Error.redirected to false', () => {
+                expect.assertions(1)
+
+                return fetch('https://example.com').then(parser.json()).
+                    catch(e => {
+                        expect(e.redirected).toBe(false);
+                    });
+            });
+
+            test('sets Error.redirectedTo to null', () => {
+                expect.assertions(1)
+
+                return fetch('https://example.com').then(parser.json()).
+                    catch(e => {
+                        expect(e.redirectedTo).toBeNull();
+                    });
+            });
+        });
+    });
+
+    describe(`given a 302 response`, () => {
         beforeEach(() => {
-            fetch.mockResponse(
-                JSON.stringify({foo: 123}),
-                {
-                    status: status,
-                    headers: {'Content-Type':'application/json' }
-                }
-            );
+            fetch.mockResponse('', {
+                counter: 1,
+                status: 302,
+                headers: {'Location': 'https://example.com/foo/bar' }
+            });
         });
 
         test('raises an exception describing the response', () => {
@@ -47,7 +235,7 @@ beforeEach(() => fetch.resetMocks());
 
             return fetch('https://example.com').then(parser.json()).
                 catch(e => {
-                    expect(e.message).toMatch(`Request failed with HTTP status ${status} ${message}`);
+                    expect(e.message).toMatch('Request redirected to https://example.com/foo/bar');
                 });
         });
 
@@ -56,73 +244,7 @@ beforeEach(() => fetch.resetMocks());
 
             return fetch('https://example.com').then(parser.json()).
                 catch(e => {
-                    expect(e.responseBody).toEqual({foo: 123});
-                });
-        });
-
-        test('sets the response to Error.response', () => {
-            expect.assertions(1);
-
-            return fetch('https://example.com').then(parser.json()).
-                catch(e => {
-                    expect(e.response).toBeInstanceOf(Response);
-                });
-        });
-
-        test('sets Error.json to true', () => {
-            expect.assertions(1)
-
-            return fetch('https://example.com').then(parser.json()).
-                catch(e => {
-                    expect(e.json).toBe(true);
-                });
-        });
-
-        test('sets Error.redirected to false', () => {
-            expect.assertions(1)
-
-            return fetch('https://example.com').then(parser.json()).
-                catch(e => {
-                    expect(e.redirected).toBe(false);
-                });
-        });
-
-        test('sets Error.redirectedTo to null', () => {
-            expect.assertions(1)
-
-            return fetch('https://example.com').then(parser.json()).
-                catch(e => {
-                    expect(e.redirectedTo).toBeNull();
-                });
-        });
-    });
-
-    describe(`given an HTML response with HTTP ${status} status`, () => {
-        beforeEach(() => {
-            fetch.mockResponse(
-                '<h1>Server Error</h1>',
-                {
-                    status: status,
-                    headers: {'Content-Type':'text/html' }
-                }
-            );
-        });
-
-        test('raises an exception describing the response', () => {
-            expect.assertions(1);
-
-            return fetch('https://example.com').then(parser.json()).
-                catch(e => {
-                    expect(e.message).toMatch(`Request failed with HTTP status ${status} ${message}`);
-                });
-        });
-
-        test('sets the response body to Error.responseBody', () => {
-            expect.assertions(1);
-
-            return fetch('https://example.com').then(parser.json()).
-                catch(e => {
-                    expect(e.responseBody).toBe('<h1>Server Error</h1>');
+                    expect(e.responseBody).toBeNull();
                 });
         });
 
@@ -136,7 +258,7 @@ beforeEach(() => fetch.resetMocks());
         });
 
         test('sets Error.json to false', () => {
-            expect.assertions(1);
+            expect.assertions(1)
 
             return fetch('https://example.com').then(parser.json()).
                 catch(e => {
@@ -144,125 +266,60 @@ beforeEach(() => fetch.resetMocks());
                 });
         });
 
-
-        test('sets Error.redirected to false', () => {
+        test('sets Error.redirected to true', () => {
             expect.assertions(1)
 
             return fetch('https://example.com').then(parser.json()).
                 catch(e => {
-                    expect(e.redirected).toBe(false);
+                    expect(e.redirected).toBe(true);
                 });
         });
 
-        test('sets Error.redirectedTo to null', () => {
+        test('sets Error.redirectedTo to the redirected URL', () => {
             expect.assertions(1)
 
             return fetch('https://example.com').then(parser.json()).
                 catch(e => {
-                    expect(e.redirectedTo).toBeNull();
+                    expect(e.redirectedTo).toBe('https://example.com/foo/bar');
                 });
         });
     });
-});
 
-describe(`given a 302 response`, () => {
-    beforeEach(() => {
-        fetch.mockResponse('', {
-            counter: 1,
-            status: 302,
-            headers: {'Location': 'https://example.com/foo/bar' }
+    describe('strict option', () => {
+        const htmlResponse = () => fetch.mockResponse('<h1>Server Error</h1>', {headers: {'Content-Type': 'text/html'}})
+
+        test('when true raises an error when the content type is not json', () => {
+            htmlResponse();
+
+            expect(
+                () => fetch('https://example.com').then(parser.json({strict: true}))
+            ).rejects.toThrow('Expected JSON response but was text/html');
         });
-    });
 
-    test('raises an exception describing the response', () => {
-        expect.assertions(1)
+        test('when true does not raise an error when the status code is 204 (no content)', () => {
+            fetch.mockResponse('', {status: 204, statusText: 'No Content'});
 
-        return fetch('https://example.com').then(parser.json()).
-            catch(e => {
-                expect(e.message).toMatch('Request redirected to https://example.com/foo/bar');
-            });
-    });
+            expect(
+                () => fetch('https://example.com').then(parser.json({strict: true}))
+            ).resolves.toBeDefined()
+        });
 
-    test('sets the parsed response body to Error.responseBody', () => {
-        expect.assertions(1)
+        test('when false returns the response', () => {
+            htmlResponse();
 
-        return fetch('https://example.com').then(parser.json()).
-            catch(e => {
-                expect(e.responseBody).toBeNull();
-            });
-    });
+            return fetch('https://example.com').
+                then(parser.json({strict: false})).
+                then(html => {
+                    expect(html).toBe('<h1>Server Error</h1>');
+                });
+        });
 
-    test('sets the response to Error.response', () => {
-        expect.assertions(1);
+        test('defaults to true', () => {
+            htmlResponse();
 
-        return fetch('https://example.com').then(parser.json()).
-            catch(e => {
-                expect(e.response).toBeInstanceOf(Response);
-            });
-    });
-
-    test('sets Error.json to false', () => {
-        expect.assertions(1)
-
-        return fetch('https://example.com').then(parser.json()).
-            catch(e => {
-                expect(e.json).toBe(false);
-            });
-    });
-
-    test('sets Error.redirected to true', () => {
-        expect.assertions(1)
-
-        return fetch('https://example.com').then(parser.json()).
-            catch(e => {
-                expect(e.redirected).toBe(true);
-            });
-    });
-
-    test('sets Error.redirectedTo to the redirected URL', () => {
-        expect.assertions(1)
-
-        return fetch('https://example.com').then(parser.json()).
-            catch(e => {
-                expect(e.redirectedTo).toBe('https://example.com/foo/bar');
-            });
-    });
-});
-
-describe('strict option', () => {
-   const htmlResponse = () => fetch.mockResponse('<h1>Server Error</h1>', {headers: {'Content-Type': 'text/html'}})
-
-    test('when true raises an error when the content type is not json', () => {
-        htmlResponse();
-
-        expect(
-            () => fetch('https://example.com').then(parser.json({strict: true}))
-        ).rejects.toThrow('Expected JSON response but was text/html');
-    });
-
-    test('when true does not raise an error when the status code is 204 (no content)', () => {
-        fetch.mockResponse('', {status: 204, statusText: 'No Content'});
-
-        expect(
-            () => fetch('https://example.com').then(parser.json({strict: true}))
-        ).resolves.toBeDefined()
-    });
-
-    test('when false returns the response', () => {
-        htmlResponse();
-
-        return fetch('https://example.com').
-            then(parser.json({strict: false})).
-            then(html => {
-                expect(html).toBe('<h1>Server Error</h1>');
-            });
-    });
-
-    test('defaults to true', () => {
-        htmlResponse();
-
-        expect(
-            () => fetch('https://example.com').then(parser.json())
-        ).rejects.toThrow('Expected JSON response but was text/html');
+            expect(
+                () => fetch('https://example.com').then(parser.json())
+            ).rejects.toThrow('Expected JSON response but was text/html');
+        });
     });
 });

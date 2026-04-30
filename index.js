@@ -26,17 +26,39 @@ function exception(message, response, options) {
     return error;
 }
 
-function error(response) {
+function checkRedirect(response) {
     if(response.redirected) {
         const location = response.headers.get('Location');
         throw exception(`Request redirected to ${location}`, response, {redirectedTo: location});
     }
+}
 
-    const message = `Request failed with HTTP status ${response.status} ${response.statusText}`;
+function errorMessage(response) {
+    return `Request failed with HTTP status ${response.status} ${response.statusText}`;
+}
+
+function bodyError(response) {
+    return response.text().then(body => { console.log('======= ', body); throw exception(errorMessage(response), response, {body: body}); });
+}
+
+
+function jsonError(response) {
+    checkRedirect(response);
+
     if(isJSON(response.headers))
-        return response.json().then(body => { throw exception(message, response, {json: true, body: body}); });
+        return response.json().then(body => { throw exception(errorMessage(response), response, {json: true, body: body}); });
 
-    return response.text().then(body => { throw exception(message, response, {body: body}); });
+    return bodyError(response);
+}
+
+function textError(response) {
+    checkRedirect(response);
+
+    return bodyError(response);
+}
+
+function parseText(options) {
+    return response => response.ok ? response.text() : textError(response);
 }
 
 function parseJSON(options) {
@@ -44,7 +66,7 @@ function parseJSON(options) {
 
     return function(response) {
         if(!response.ok)
-            return error(response);
+            return jsonError(response);
 
         if(isJSON(response.headers))
             return response.json();
@@ -59,6 +81,6 @@ function parseJSON(options) {
     };
 }
 
-const parser = { json: parseJSON };
+const parser = { json: parseJSON, text: parseText };
 
 export default parser;
